@@ -2,7 +2,7 @@
 	.include "cshell.inc"
 
 	PAGE = $0800
-	TOP = $a000
+	TOP = $d000
 
 	.cpu "6502"
 	* = $801
@@ -20,6 +20,8 @@ entry:
 	jsr print
 	.null 147, 14, 5, 13, "CShell (C) 2020 David Given", 13
 
+	lda #$36
+	sta 1			; map Basic out
 	lda #0
 	sta 53280		; set border to black
 	sta 53281		; set background to black
@@ -30,6 +32,13 @@ entry:
 	sta IRQV+0
 	lda #>brk_handler
 	sta IRQV+1
+
+	; Set the kernal's top-of-memory address.
+
+	ldx #<ccp_start
+	ldy #>ccp_start
+	clc
+	jsr MEMTOP
 
 	; Relocate CCP to top of memory
 
@@ -253,7 +262,7 @@ newline:
 brk_handler:
 	lda #1
 	sta status
-	jmp ccp_start
+	jmp ccp_entry
 
 dotcom: .text 0, 'moc.' ; backwards
 

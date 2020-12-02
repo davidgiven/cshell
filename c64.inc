@@ -1,3 +1,4 @@
+MEMTOP = $ff9c
 READST = $ffb7
 SETLFS = $ffba
 SETNAM = $ffbd
