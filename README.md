@@ -29,7 +29,11 @@ Typing '#9' which change drive to device 9.
 
 Look at `echo.asm` for a minimal example of how to write a CShell program. In essence:
 
-  - Programs are simple .PRG files which are loaded at 0x0800.
+  - Programs are simple .PRG files which are loaded at 0x0801. The entry point
+	is 0x080d, making them compatible with the normal Basic machine code stub.
+	A program can detect whether it's being run under CShell by looking for
+	'C', 'S' and 'H' in A, X and Y respectively on startup. See `hybrid.asm`
+	for an example.
   - Zero page address 0x0002 contains a pointer back to CShell. Call this when
 	you're finished (or do a `rts`).
   - Zero page address 0x0004 contains a pointer to the Program Parameter Block,
