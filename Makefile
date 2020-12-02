@@ -1,11 +1,8 @@
-all: cshell.prg echo.com brk.com
+all: cshell echo.com brk.com dir.com
 
-cshell.prg: cshell.asm
+cshell: cshell.asm
 	64tass --cbm-prg -a -o $@ -L $(patsubst %.asm,%.lst,$<) $<
 
-echo.com: echo.asm
-	64tass --cbm-prg -a -o $@ -L $(patsubst %.asm,%.lst,$<) $<
-
-brk.com: brk.asm
+%.com: %.asm cshell.inc c64.inc
 	64tass --cbm-prg -a -o $@ -L $(patsubst %.asm,%.lst,$<) $<
 
