@@ -2,7 +2,7 @@
 	.include "cshell.inc"
 
 	.cpu "6502"
-	* = $800
+	CSHELL_HEADER
 
 	ldy #PPB_ARGPTR
 	lda (PPB),y
@@ -17,5 +17,5 @@
 +
 	lda #13
 	jsr CHROUT
-	jmp (2)
+	jmp (CSHELL)
 

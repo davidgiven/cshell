@@ -2,7 +2,6 @@
 	.include "cshell.inc"
 
 	.cpu "6502"
-	* = $800
-
+	CSHELL_HEADER
 	brk
 

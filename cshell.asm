@@ -1,14 +1,10 @@
 	.include "c64.inc"
 	.include "cshell.inc"
 
-	PAGE = $0800
 	TOP = $d000
 
 	.cpu "6502"
-	* = $801
-	.word +, 1
-	.null $9e, format("%d", entry)
-+	.word 0
+	BASIC_HEADER
 
 ; ---------------------------------------------------------------------------
 ;                                 STARTUP CODE
@@ -216,7 +212,7 @@ null_terminate:
 
 	lda #1
 	ldx drive
-	ldy #0
+	ldy #1
 	jsr SETLFS
 
 	lda commandlen
@@ -228,8 +224,6 @@ null_terminate:
 	jsr SETMSG			; error messages but no control messages
 
 	lda #0
-	ldx #<PAGE
-	ldy #>PAGE
 	jsr LOAD
 	bcs error
 	jsr newline
@@ -245,8 +239,11 @@ null_terminate:
 	lda #>PPB_abs
 	sta PPB+1
 
-	jsr PAGE
-	jmp ccp_start
+	lda #'c'
+	ldx #'s'
+	ldy #'h'
+	jsr entry
+	jmp ccp_entry
 
 error:
 	jsr newline
