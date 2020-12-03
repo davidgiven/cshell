@@ -113,7 +113,7 @@ gobble:
 	jsr readchar
 	cmp #13
 	bne gobble
-	jmp empty_line
+	jmp newline_then_read_command
 
 ccp_entry:
 	ldx #0
@@ -131,8 +131,8 @@ empty_line:
 	lda #0
 	sta status
 +
+newline_then_read_command:
 	jsr newline
-
 read_command:
 	lda drive
 	clc
@@ -154,6 +154,7 @@ read_command:
 	cmp #'#'
 	bne +
 	jsr readchar
+
 	sec
 	sbc #'0'
 	sta drive
