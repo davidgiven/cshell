@@ -14,12 +14,12 @@ entry:
 	; Print startup banner
 
 	jsr print
-	.null 147, 14, 5, 13, "CShell (C) 2020 David Given", 13, "  $"
+	.null 147, 14, 5, 13, "CShell (C) 2020 David Given", 13, "  "
 
-	lda #>ccp_start
-	jsr print_h8
-	lda #<ccp_start
-	jsr print_h8
+	lda #>(ccp_start - $800)
+	ldx #<(ccp_start - $800)
+	jsr $bdcd		; Basic routine to print a byte
+
 	jsr print
 	.null " bytes free", 13
 
@@ -100,24 +100,6 @@ print:
 	lda 2
 	pha
 	rts
-
-; Prints A in hex.
-print_h8:
-	pha
-	lsr a			; swap nibbles
-	lsr a
-	lsr a
-	lsr a
-	jsr print_nibble
-	pla
-	and #15
-print_nibble:
-	sed
-	clc
-	adc #$90
-	adc #$40
-	cld
-	jmp CHROUT
 
 ; ---------------------------------------------------------------------------
 ;                              COMMAND PROCESSOR
