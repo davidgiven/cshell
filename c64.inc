@@ -5,6 +5,7 @@ SETNAM = $ffbd
 OPEN = $ffc0
 CLOSE = $ffc3
 CHKIN = $ffc6
+CHKOUT = $ffc9
 CHRIN = $ffcf
 CHROUT = $ffd2
 LOAD = $ffd5

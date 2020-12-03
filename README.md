@@ -35,10 +35,11 @@ Look at `echo.asm` for a minimal example of how to write a CShell program. In es
 	'C', 'S' and 'H' in A, X and Y respectively on startup. See `hybrid.asm`
 	for an example.
   - Zero page address 0x0002 contains a pointer back to CShell. Call this when
-	you're finished (or do a `rts`).
+	you're finished (or do a `rts`). Doing `brk` will set the exit status and
+	restart the shell.
   - Zero page address 0x0004 contains a pointer to the Program Parameter Block,
-	which is where you can find the current drive, exit status, command line
-	arguments etc.
+	which is where you can find the current drive, exit status of the last
+	program, command line arguments etc.
 
 
 Where?
