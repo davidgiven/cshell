@@ -1,4 +1,6 @@
-; Lists the current directory.
+; Dumps a file to stdout.
+;
+; Syntax: type <filename>
 
 	.include "c64.inc"
 	.include "cshell.inc"
@@ -6,38 +8,22 @@
 	.cpu "6502"
 	CSHELL_HEADER
 
-	jsr open_directory
+PTR = 6
+
+	jsr open_file
 
 	ldx #1
 	jsr CHKIN
 
-line_loop:
-	; Skip until the next ".
-
 -
 	jsr READST
 	and #$40		; check for EOF
-	bne eof
+	bne +
 	jsr CHRIN
-	cmp #'"'
-	bne -
-
-	jsr CHROUT
--
-	jsr READST
-	and #$40		; check for EOF
-	bne eof
-	jsr CHRIN
-	beq eol
 	jsr CHROUT
 	jmp -
-
-eol:
-	lda #13
-	jsr CHROUT
-	jmp line_loop
++
 	
-eof:
 	ldx #0
 	jsr CHKIN
 	jsr CLOSE
@@ -45,10 +31,31 @@ eof:
 
 ; --- Open the directory stream ----------------------------------------------
 
-open_directory:
-	lda #1
-	ldx #<filename
-	ldy #>filename
+open_file:
+	ldy #PPB_ARGPTR
+	lda (PPB), y
+	tay
+	ldx #0
+-
+	lda (PPB), y
+	beq +
+	iny
+	inx
+	jmp -
++
+
+	txa
+	pha
+	clc
+	lda PPB+0
+	ldy #PPB_ARGPTR
+	adc (PPB), y
+	tax
+	lda PPB+1
+	adc #0
+	tay
+	sta PTR+1
+	pla
 	jsr SETNAM
 
 	ldy #PPB_DRIVE
@@ -63,8 +70,6 @@ open_directory:
 	jsr OPEN
 	jsr get_drive_status
 	rts
-
-filename: .null "$0"
 
 ; Read the drive status bytes into the buffer.
 
@@ -95,31 +100,10 @@ get_drive_status:
 	jsr CHRIN
 	jmp -
 +
-
-	ldx #0
-	jsr CHKIN
-	lda #15
-	jsr CLOSE
-
 	lda #1
 	ldy #PPB_STATUS
 	sta (PPB), y
 	jmp (CSHELL)
-
-no_drive_error:
--
-	jsr READST
-	and #$40		; check for EOF
-	bne +
-	jsr CHRIN
-	jmp -
-+
-
-	ldx #0
-	jsr CHKOUT
-	lda #15
-	jsr CLOSE
-	rts
 
 ; --- Utilities --------------------------------------------------------------
 
@@ -144,5 +128,32 @@ print:
 	pha
 	lda 2
 	pha
+	rts
+
+
+
+	ldx #0
+	jsr CHKIN
+	lda #15
+	jsr CLOSE
+
+	lda #1
+	ldy #PPB_STATUS
+	sta (PPB), y
+	jmp (CSHELL)
+
+no_drive_error:
+-
+	jsr READST
+	and #$40		; check for EOF
+	bne +
+	jsr CHRIN
+	jmp -
++
+
+	ldx #0
+	jsr CHKOUT
+	lda #15
+	jsr CLOSE
 	rts
 
