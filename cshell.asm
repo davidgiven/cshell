@@ -14,7 +14,14 @@ entry:
 	; Print startup banner
 
 	jsr print
-	.null 147, 14, 5, 13, "CShell (C) 2020 David Given", 13
+	.null 147, 14, 5, 13, "CShell (C) 2020 David Given", 13, "  $"
+
+	lda #>ccp_start
+	jsr print_h8
+	lda #<ccp_start
+	jsr print_h8
+	jsr print
+	.null " bytes free", 13
 
 	lda #$36
 	sta 1			; map Basic out
@@ -94,6 +101,24 @@ print:
 	pha
 	rts
 
+; Prints A in hex.
+print_h8:
+	pha
+	lsr a			; swap nibbles
+	lsr a
+	lsr a
+	lsr a
+	jsr print_nibble
+	pla
+	and #15
+print_nibble:
+	sed
+	clc
+	adc #$90
+	adc #$40
+	cld
+	jmp CHROUT
+
 ; ---------------------------------------------------------------------------
 ;                              COMMAND PROCESSOR
 ; ---------------------------------------------------------------------------
@@ -103,7 +128,7 @@ ccp_image_start:
 ccp_start:
 
 gobble:
-	jsr CHRIN
+	jsr readchar
 	cmp #13
 	bne gobble
 	jmp empty_line
@@ -113,8 +138,19 @@ ccp_entry:
 	txs
 	jsr CLALL
 
+	; If the last command failed, close any outstanding submit files.
+
+	lda status
+	beq +
+	jsr close_sub
 empty_line:
+	lda #'!'
+	jsr CHROUT
+	lda #0
+	sta status
++
 	jsr newline
+
 read_command:
 	lda drive
 	clc
@@ -125,17 +161,17 @@ read_command:
 
 	; Skip leading whitespace.
 
--	jsr CHRIN
+-	jsr readchar
 	cmp #" "
 	beq -
 	cmp #13
-	beq empty_line
+	beq ccp_entry
 
 	; Drive change command?
 
 	cmp #'#'
 	bne +
-	jsr CHRIN
+	jsr readchar
 	sec
 	sbc #'0'
 	sta drive
@@ -152,7 +188,7 @@ read_command:
 	beq +
 	sta command, x
 	inx
-	jsr CHRIN
+	jsr readchar
 	jmp -
 +
 
@@ -185,7 +221,7 @@ read_command:
 	beq null_terminate
 	cmp #' '
 	bne +
-	jsr CHRIN
+	jsr readchar
 	jmp -
 +
 
@@ -194,7 +230,7 @@ read_command:
 -
 	sta command, x
 	inx
-	jsr CHRIN
+	jsr readchar
 	cmp #13
 	bne -
 
@@ -203,10 +239,6 @@ read_command:
 null_terminate:
 	lda #0
 	sta command, x
-
-	; Newline after command.
-
-	jsr newline
 
 	; Look for a file of this name on the current drive.
 
@@ -220,8 +252,8 @@ null_terminate:
 	ldy #>command
 	jsr SETNAM
 
-	lda #$80
-	jsr SETMSG			; error messages but no control messages
+	lda #$00
+	jsr SETMSG			; no messages
 
 	lda #0
 	jsr LOAD
@@ -249,8 +281,8 @@ error:
 	jsr newline
 	lda #'?'
 	jsr CHROUT
-	jsr newline
-	jmp read_command
+	jsr close_sub
+	jmp ccp_entry
 
 newline:
 	lda #13
@@ -261,11 +293,55 @@ brk_handler:
 	sta status
 	jmp ccp_entry
 
+; Reads a character from the input stream, either via CHRIN or the input buffer.
+; Does not change X.
+readchar:
+	lda inputbuf+0
+	sta CSHELL+0		; reuse CSHELL as the intput pointer
+	bne readchar_sub
+	lda inputbuf+1
+	sta CSHELL+1
+	bne readchar_sub
+	jmp CHRIN
+	
+readchar_sub
+	ldy #0
+	lda (CSHELL), y
+	beq readchar_eof
+
+	inc inputbuf+0
+	beq +
+	inc inputbuf+1
++
+	cmp #13
+	beq +
+	jsr CHROUT
++	rts
+
+readchar_eof:
+	jsr close_sub
+	jmp CHRIN
+
+close_sub:
+	txa
+	pha
+	ldx #<ccp_start
+	ldy #>ccp_start
+	clc
+	jsr MEMTOP
+	lda #0
+	sta inputbuf+0
+	sta inputbuf+1
+	pla
+	tax
+	rts
+
 dotcom: .text 0, 'moc.' ; backwards
 
 PPB_abs:
 drive:       .byte 8
 status:      .byte 0
+inputbuf:    .word 0
 argptr:		 .byte ?
 commandlen:  .byte ?
 command:     .fill 80

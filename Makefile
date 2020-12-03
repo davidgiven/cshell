@@ -1,4 +1,4 @@
-all: cshell echo.com brk.com hybrid.com dos.com
+all: cshell echo.com brk.com hybrid.com dos.com submit.com
 
 cshell: cshell.asm
 	64tass --cbm-prg -a -o $@ -L $(patsubst %.asm,%.lst,$<) $<
