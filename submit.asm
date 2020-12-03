@@ -227,6 +227,7 @@ no_drive_error:
 	bne +
 	jsr CHRIN
 	jmp -
++
 
 	ldx #0
 	jsr CHKOUT
