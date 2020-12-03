@@ -15,9 +15,6 @@
 	ldx #1
 	jsr CHKIN
 
-	ldx #4
-	jsr gobble
-
 line_loop:
 	; Skip until the next ".
 
@@ -50,14 +47,6 @@ eof:
 	jsr CLOSE
 	rts
 
-gobble:
-	cpx #0
-	beq +
-	jsr CHRIN
-	dex
-	jmp gobble
-+	rts
-
 ; --- Open the directory stream ----------------------------------------------
 
 open_directory:
@@ -79,7 +68,7 @@ open_directory:
 	jsr get_drive_status
 	rts
 
-filename: .null "$"
+filename: .null "$0"
 
 ; Read the drive status bytes into the buffer.
 
