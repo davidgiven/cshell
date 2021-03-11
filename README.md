@@ -8,7 +8,9 @@ What?
 CShell is a very simple DOS shell for the Commodore 64. It allows running
 machine code programs directly from disk without needing to go through Basic,
 with command line parameter passsing and exit status codes. It's intended for
-scripting multiple commands together (although this bit isn't done yet).
+scripting multiple commands together with the SUBMIT command; I wanted to use
+it for running my [Cowgol](http://cowlark.com/cowgol) compiler, but it turned
+out that there's not enough memory on a stock C64 to do that.
 
 
 How?
@@ -18,14 +20,14 @@ Build it with 64tass, and then copy CSHELL and all the .COM files onto a
 Commodore 64 disk (I use Vice with an emulated drive for testing). Then do:
 
     LOAD "CSHELL",8
-	RUN
+    RUN
 
 ...to start the environment.
 
-Now, typeing 'echo' will try to load and run the file 'ECHO.COM'. Command line
+Now, typing 'echo' will try to load and run the file 'ECHO.COM'. Command line
 parameters work.
 
-Typing '#9' which change drive to device 9.
+Typing '#9' will change drive to device 9.
 
 Look at `echo.asm` for a minimal example of how to write a CShell program. In essence:
 
@@ -39,7 +41,7 @@ Look at `echo.asm` for a minimal example of how to write a CShell program. In es
 	restart the shell.
   - Zero page address 0x0004 contains a pointer to the Program Parameter Block,
 	which is where you can find the current drive, exit status of the last
-	program, command line arguments etc.
+	program, top of memory, command line arguments etc.
 
 
 Where?
